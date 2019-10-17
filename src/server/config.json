@@ -1,0 +1,7 @@
+{
+    "server": {
+        "port": 8800,
+        "version": "v1"
+    },
+    "version": "v0.0.1"
+}

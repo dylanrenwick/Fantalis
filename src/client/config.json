@@ -1,0 +1,12 @@
+{
+    "server": {
+        "type": "ws",
+        "host": "localhost",
+        "port": 8800,
+        "version": "v1"
+    },
+    "user": {
+        "id": 0
+    },
+    "version": "v0.0.1"
+}
