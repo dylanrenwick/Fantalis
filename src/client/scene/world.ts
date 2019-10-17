@@ -1,10 +1,10 @@
-const sceneFactory = require('../../shared/scenes/sceneFactory.js');
+import sceneFactory from '../../shared/scene/sceneFactory';
 
-const tileMap = require('../../shared/gameObjects/tileMap.js');
-const player = require('../../shared/gameObjects/entity/player.js');
-const vector2 = require('../../shared/util/vector2.js');
+import tileMap from '../../shared/gameObject/tileMap';
+import player from '../../shared/gameObject/entity/player';
+import vector2 from '../../shared/util/vector2';
 
-module.exports = sceneFactory(0, function(s, game, user) {
+export default sceneFactory(0, function(s, game, user) {
     let map = new tileMap("tlm_map");
     map.transform.pos = new vector2(0, 0);
     s.addGameObject(map);

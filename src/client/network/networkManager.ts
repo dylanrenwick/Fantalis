@@ -1,10 +1,14 @@
-const eventHandler = require('../../shared/util/eventHandler.js');
-const packet = require('../../shared/network/packet.js');
+import eventHandler from '../../shared/util/eventHandler';
+import packet from '../../shared/network/packet';
 
-module.exports = class networkManager extends eventHandler {
+export default class networkManager extends eventHandler {
+    static instance: networkManager;
     static getInstance() {
         return networkManager.instance;
     }
+
+    config: any;
+    socket: WebSocket;
 
     constructor(config) {
         super([
@@ -38,11 +42,11 @@ module.exports = class networkManager extends eventHandler {
         }, packet.messageType["AUTH_VERSION"]);
         this.addTemporaryEventListener("message", (e) => {
             let res = packet.decode(e.data);
-            if (res.type !== packet.messageType["AUTH_VERSION"]) return false;
-            if (res.version !== this.config.version || res.protocolVersion !== this.config.server.version) {
-                throw new Error(`Invalid version! Client has ${this.config.version}:${this.config.server.version} but server wants ${res.version}:${res.protocolVersion}!`);
+            if (res.get("type") !== packet.messageType["AUTH_VERSION"]) return false;
+            if (res.get("version") !== this.config.version || res.get("protocolVersion") !== this.config.server.version) {
+                throw new Error(`Invalid version! Client has ${this.config.version}:${this.config.server.version} but server wants ${res.get("version")}:${res.get("protocolVersion")}!`);
             }
-            console.log(`Server has version: ${res.version}:${res.protocolVersion}`);
+            console.log(`Server has version: ${res.get("version")}:${res.get("protocolVersion")}`);
             return true;
         });
         this.socket.send(pack.encode());

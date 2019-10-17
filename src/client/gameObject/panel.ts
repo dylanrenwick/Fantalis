@@ -1,21 +1,16 @@
-const gameObject = require('../../shared/gameObjects/gameObject.js');
-const vector2 = require('../../shared/util/vector2.js');
+import gameObject from '../../shared/gameObject/gameObject';
 
-module.exports = class panel extends gameObject {
-    constructor(name, arg0, arg1, arg2) {
+export default class panel extends gameObject {
+    backgroundColor: string;
+    borderColor: string;
+    borderSize: number;
+
+    img: HTMLImageElement;
+
+    constructor(name, img?) {
         super(name);
 
-        if (typeof(arg0) === "string") {
-            this.backgroundColor = arg0;
-            if (typeof(arg1) === "string") {
-                this.borderColor = arg1;
-                if (typeof(arg2) === "number") {
-                    this.borderSize = arg2;
-                }
-            }
-        } else {
-            this.img = arg0 || null;
-        }
+        this.img = img || null;
     }
 
     draw(ctx) {

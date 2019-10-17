@@ -1,6 +1,15 @@
-const scene = require('../../shared/scenes/scene.js');
+import scene from '../../shared/scene/scene';
+import game from '../game';
 
-module.exports = class clientScene extends scene {
+export default class clientScene extends scene {
+    static sceneList: Array<scene | ((...args: Array<any>) => scene)> = require('./sceneList');
+
+    game: game;
+
+    constructor(id) {
+        super(id);
+    }
+
     draw(ctx) {
         this.gameObjects.forEach(x => x.draw(ctx));
     }
@@ -43,13 +52,12 @@ module.exports = class clientScene extends scene {
         this.gameObjects.forEach(x => x.transform.onKeyUp(e));
     }
 
-    static byId(id, game) {
+    static byId(id, game, ...args) {
         if (!clientScene.sceneList[id]) return null;
-        if (typeof(clientScene.sceneList[id]) === "function") {
-            let args = Array.from(arguments);
-            args.splice(0, 1);
+        let sceneItem: scene | ((...args: Array<any>) => scene) = clientScene.sceneList[id];
+        if (!(sceneItem instanceof scene)) {
             args = [game].concat(args);
-            clientScene.sceneList[id] = clientScene.sceneList[id](...args);
+            clientScene.sceneList[id] = sceneItem(...args);
         }
         
         if (clientScene.sceneList[id] instanceof scene) {
@@ -65,5 +73,3 @@ module.exports = class clientScene extends scene {
         return cScene;
     }
 }
-
-module.exports.sceneList = require('./sceneList.js');

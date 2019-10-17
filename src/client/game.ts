@@ -1,8 +1,22 @@
-const clientScene = require('./scenes/clientScene.js');
-const eventHandler = require('../shared/util/eventHandler.js');
-const networkManager = require('./network/networkManager.js');
+import clientScene from './scene/clientScene';
+import eventHandler from '../shared/util/eventHandler';
+import gameObject from '../shared/gameObject/gameObject';
+import networkManager from './network/networkManager';
 
-module.exports = class game extends eventHandler {
+export default class game extends eventHandler {
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+
+    config: any = {};
+
+    currentScene: any;
+    drawInterval: any;
+    player: gameObject;
+
+    httpReq: XMLHttpRequest;
+
+    netManager: networkManager;
+
     constructor(canvas) {
         super([
             "mouseDown",
@@ -18,7 +32,7 @@ module.exports = class game extends eventHandler {
         this.canvas.width = 800;
         this.canvas.height = 480;
 
-        this.canvas.setAttribute("tabindex", 0);
+        this.canvas.setAttribute("tabindex", '0');
 
         this.canvas.addEventListener("mousedown", (e) => this.triggerEvent("mouseDown", e));
         this.canvas.addEventListener("mouseup", (e) => this.triggerEvent("mouseUp", e));
@@ -26,10 +40,9 @@ module.exports = class game extends eventHandler {
         this.canvas.addEventListener("keydown", (e) => this.triggerEvent("keyDown", e));
         this.canvas.addEventListener("keyup", (e) => this.triggerEvent("keyUp", e));
 
-        this.config = {};
         this.httpReq = new XMLHttpRequest();
         this.httpReq.addEventListener("readystatechange", (e) => { this.onConfigLoad.bind(this, e)(); });
-        this.httpReq.open("GET", "bin/client/config.json");
+        this.httpReq.open("GET", "bin/client/configon");
         this.httpReq.send();
 
         this.currentScene = clientScene.byId(0, this);
@@ -50,15 +63,13 @@ module.exports = class game extends eventHandler {
                 this.netManager = new networkManager(this.config);
                 this.netManager.addEventListener("login", (ev) => this.loadWorld(ev));
             } catch (e) {
-                console.error("Could not load config.json!");
+                console.error("Could not load configon!");
                 throw e;
             }
         }
     }
 
-    setActiveScene(id) {
-        let args = Array.from(arguments);
-        args.splice(0, 1);
+    setActiveScene(id, ...args) {
         this.currentScene = clientScene.byId(id, this, ...args);
         this.ctx.fillStyle = "white";
         this.ctx.fillRect(0, 0, 800, 480);

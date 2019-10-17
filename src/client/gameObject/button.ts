@@ -1,11 +1,17 @@
-const panel = require("./panel.js");
-const vector2 = require("../../shared/util/vector2.js");
+import panel from "./panel";
+import vector2 from "../../shared/util/vector2";
 
-module.exports = class button extends panel {
+export default class button extends panel {
+    text: string;
+    font: string;
+    padding: vector2;
+
+    highlighted: boolean;
+    highlightBackground: string;
+    highlightBorder: string;
+
     constructor(name, text) {
-        let args = Array.from(arguments);
-        args.splice(1, 1);
-        super(...args);
+        super(name);
 
         this.text = text;
         this.font = "20px sans-serif";

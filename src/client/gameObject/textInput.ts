@@ -1,11 +1,23 @@
-const panel = require("./panel.js");
-const vector2 = require("../../shared/util/vector2.js");
+import panel from "./panel";
+import vector2 from "../../shared/util/vector2";
 
-module.exports = class textInput extends panel {
-    constructor(name, img) {
+export default class textInput extends panel {
+    focused: boolean;
+
+    value: string;
+    font: string;
+    placeholder: string;
+
+    padding: vector2;
+    caretPos: number;
+
+    censored: boolean;
+    censorChar: string;
+
+    constructor(name, img?) {
         super(name, img);
 
-        this.focussed = false;
+        this.focused = false;
         this.value = "";
         this.padding = new vector2(8, 8);
         this.font = "22px sans-serif";
@@ -28,7 +40,7 @@ module.exports = class textInput extends panel {
         ctx.fillRect(pos.x, pos.y, size.x, size.y);
         ctx.strokeRect(pos.x, pos.y, size.x, size.y);
 
-        if (this.focussed) {
+        if (this.focused) {
             ctx.strokeStyle = "#ABC4FE";
             ctx.strokeRect(pos.x + 1, pos.y + 1, size.x - 2, size.y - 2);
             ctx.strokeRect(pos.x + 2, pos.y + 2, size.x - 4, size.y - 4);
@@ -46,7 +58,7 @@ module.exports = class textInput extends panel {
             renderText = renderText.substring(1);
             textMetrics = ctx.measureText(renderText);
         }
-        if (this.value.length > 0 || this.focussed) {
+        if (this.value.length > 0 || this.focused) {
             ctx.fillStyle = "black";
             ctx.textBaseline = "bottom";
             ctx.fillText(renderText, pos.x + this.padding.x, pos.y + size.y - this.padding.y, maxWidth);
@@ -55,7 +67,7 @@ module.exports = class textInput extends panel {
             ctx.textBaseline = "bottom";
             ctx.fillText(this.placeholder, pos.x + this.padding.x, pos.y + size.y - this.padding.y, maxWidth);
         }
-        if (this.focussed) {
+        if (this.focused) {
             let caretSize = ctx.measureText(renderText.substring(0, this.caretPos));
             ctx.strokeStyle = "black";
             ctx.beginPath();
@@ -66,15 +78,15 @@ module.exports = class textInput extends panel {
     }
 
     focus() {
-        this.focussed = true;
+        this.focused = true;
         this.caretPos = this.value.length;
     }
     defocus() {
-        this.focussed = false;
+        this.focused = false;
     }
 
     onKeyDown(e) {
-        if (!this.focussed) return;
+        if (!this.focused) return;
         if (e.key.toString().length === 1) {
             this.value += e.shiftKey ? e.key.toUpperCase() : e.key;
             this.caretPos++;
@@ -87,7 +99,7 @@ module.exports = class textInput extends panel {
                 valArr.splice(this.caretPos, 1);
                 this.value = valArr.join('');
             }
-        } else if (e.key.toLowerCase() === "escape") this.focussed = false;
+        } else if (e.key.toLowerCase() === "escape") this.focused = false;
         else if (e.key.toLowerCase() === "arrowleft") this.caretPos = Math.max(0, this.caretPos - 1);
         else if (e.key.toLowerCase() === "arrowright") this.caretPos = Math.min(this.value.length, this.caretPos + 1);
         else if (e.key.toLowerCase() === "end") this.caretPos = this.value.length;

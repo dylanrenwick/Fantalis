@@ -1,10 +1,10 @@
-const sceneFactory = require('../../shared/scenes/sceneFactory.js');
+import sceneFactory from '../../shared/scene/sceneFactory';
 
-const textInput = require('../gameObjects/textInput.js');
-const button = require('../gameObjects/button.js');
-const vector2 = require('../../shared/util/vector2.js');
+import textInput from '../gameObject/textInput';
+import button from '../gameObject/button';
+import vector2 from '../../shared/util/vector2';
 
-module.exports = sceneFactory(0, function(s, game) {
+export default sceneFactory(0, function(s, game) {
     let user = new textInput("txt_username");
     user.transform.pos = new vector2(250, 200);
     user.transform.size = new vector2(300, 40);
@@ -18,7 +18,10 @@ module.exports = sceneFactory(0, function(s, game) {
     pass.censored = true;
     s.addGameObject(pass);
 
-    let login = new button("btn_login", "Log In", "#ffffff", "#000000", 1);
+    let login = new button("btn_login", "Log In");
+    login.backgroundColor = "#ffffff";
+    login.borderColor = "#000000";
+    login.borderSize = 1;
     login.transform.pos = new vector2(300, 300);
     login.transform.size = new vector2(200, 60);
     login.highlightBackground = "#dddddd";
