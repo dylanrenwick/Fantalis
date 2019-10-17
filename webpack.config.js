@@ -7,5 +7,8 @@ module.exports = {
     },
     output: {
         filename: 'Fantalis_Client.js'
+    },
+    performance: {
+      hints: false
     }
 }
