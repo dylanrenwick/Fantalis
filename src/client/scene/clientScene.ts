@@ -1,8 +1,9 @@
 import scene from '../../shared/scene/scene';
+import sceneList from './sceneList';
 import game from '../game';
 
 export default class clientScene extends scene {
-    static sceneList: Array<scene | ((...args: Array<any>) => scene)> = require('./sceneList');
+    static sceneList: Array<scene | ((...args: Array<any>) => scene)> = sceneList;
 
     game: game;
 

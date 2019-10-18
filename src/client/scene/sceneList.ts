@@ -1,4 +1,6 @@
+import login from './login';
+import world from './world';
+
 export default [
-    require('./login'),
-    require('./world')
+    login, world
 ];
