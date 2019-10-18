@@ -1,4 +1,4 @@
-const gameObject = require('../gameObjects/gameObject.js');
+const gameObject = require('../gameObject/gameObject.js');
 
 module.exports = class scene {
     constructor(id) {
