@@ -1,5 +1,5 @@
 module.exports = {
-    entry: './src/client/fantalis.js',
+    entry: './bin/js/client/fantalis.js',
     mode: 'production',
     devtool: 'inline-source-map',
     resolve: {
