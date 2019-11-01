@@ -39,12 +39,12 @@ class logger {
             for (let i = 0; i < lines.length; i++) {
                 let quarterSize = Math.floor(logger.lineSpacingSize / 4);
                 let remainderSize = logger.lineSpacingSize - quarterSize * 4;
-                output += ' '.repeat(quarterSize * 3 - 1 + remainderSize) + this.arrowColor + '-' + ' '.repeat(quarterSize) + this.resetColor + lines[i];
+                output += '\n' + ' '.repeat(quarterSize * 3 - 1 + remainderSize) + this.arrowColor + '-' + ' '.repeat(quarterSize) + this.resetColor + lines[i];
             }
         }
         if (logger.logToConsole) console.log(output);
         if (logger.logToFile && logger.filePath.length > 0) {
-            fs.appendFile(logger.filePath, output);
+            fs.appendFile(logger.filePath, output + '\n', () => 0);
         }
     }
 
