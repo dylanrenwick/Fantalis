@@ -63,7 +63,7 @@ export default class game extends eventHandler {
                 this.netManager = new networkManager(this.config);
                 this.netManager.addEventListener("login", (ev) => this.loadWorld(ev));
             } catch (e) {
-                console.error("Could not load configon!");
+                console.error("Could not load config!");
                 throw e;
             }
         }
