@@ -25,11 +25,11 @@ module.exports = class server {
         let conn = new connection(ws, this, req.connection.remoteAddress);
         conn.addEventListener('message', (message) => this.onMessage.bind(this, message)());
         this.connections.push(conn);
-        console.log('client connected: ' + JSON.stringify(req.connection.remoteAddress));
+        logger.instance.log('client connected: ' + JSON.stringify(req.connection.remoteAddress));
     }
 
     onMessage(message) {
         let p = packet.decode(message);
-        console.log('received: [%s] %s', packet.messageType[p.get("type")], p.get("data"));
+        logger.instance.log('received: [%s] %s', packet.messageType[p.get("type")], p.get("data"), 4);
     }
 }

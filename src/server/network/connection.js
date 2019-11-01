@@ -1,7 +1,7 @@
 const authStatus = require('./authStatus.js');
 const eventHandler = require('../util/eventHandler.js');
 const packet = require('./packet.js');
-const WebSocket = require('ws');
+const logger = require('../util/logger.js');
 
 module.exports = class connection extends eventHandler {
     constructor(socket, server, address) {
@@ -28,7 +28,7 @@ module.exports = class connection extends eventHandler {
     }
 
     send(pack) {
-        console.log(`sending [${packet.messageType[pack.get("type")]}] packet to ${this.address}`);
+        logger.instance.log(`sending [${packet.messageType[pack.get("type")]}] packet to ${this.address}`, 4);
         this.socket.send(pack.encode());
         this.lastSendActivity = Date.now();
     }
@@ -39,7 +39,7 @@ module.exports = class connection extends eventHandler {
 
     close(code, reason) {
         if (code === undefined) code = 1000;
-        console.log(`client ${this.address} closing server-side with code ${code}${reason !== undefined ? ` and reason '${reason}'` : ''}`)
+        logger.instance.log(`client ${this.address} closing server-side with code ${code}${reason !== undefined ? ` and reason '${reason}'` : ''}`)
         this.socket.close(code, reason);
     }
 
@@ -59,7 +59,7 @@ module.exports = class connection extends eventHandler {
                     this.send(pack);
                     return;
                 } else {
-                    console.log(`connection ${conn.address} is running an outdated client! Client is: ${version}:${protocolVersion} but server is: ${this.server.config.version}:${this.server.config.server.version}`);
+                    logger.instance.log(`connection ${conn.address} is running an outdated client! Client is: ${version}:${protocolVersion} but server is: ${this.server.config.version}:${this.server.config.server.version}`, 2);
                     this.close(1002, "Outdated client");
                     return;
                 }
