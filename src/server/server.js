@@ -1,6 +1,7 @@
 const connection = require('./network/connection.js');
 const packet = require('./network/packet.js');
 const WebSocket = require('ws');
+const logger = require('../util/logger.js');
 
 module.exports = class server {
     constructor(config) {
@@ -11,6 +12,11 @@ module.exports = class server {
 
         this.connections = [];
         this.config = config;
+
+        logger.logToConsole = config.log.console || false;
+        logger.logToFile = config.log.filePath !== undefined && config.log.filePath.length > 0;
+        logger.filePath = config.log.filePath;
+        logger.logLevelLimit = config.log.logLevel;
 
         this.wss.on('connection', (ws, req) => this.newConnection.bind(this, ws, req)());
     }
