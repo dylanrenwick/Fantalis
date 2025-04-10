@@ -15,6 +15,11 @@ public class GameCore
 
     private readonly Dictionary<string, Player> _players;
 
+    /// <summary>
+    /// Internal constructor. Use GameCore.Create to instantiate.
+    /// </summary>
+    /// <param name="rootPath"></param>
+    /// <param name="rooms"></param>
     private GameCore(string rootPath, IEnumerable<Room> rooms)
     {
         _rootFilePath = rootPath;
