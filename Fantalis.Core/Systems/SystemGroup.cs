@@ -3,6 +3,8 @@ using System.Linq;
 
 using Arch.Core;
 
+using Fantalis.Core.Logging;
+
 namespace Fantalis.Core.Systems;
 
 public class SystemGroup : GameSystem
@@ -23,7 +25,8 @@ public class SystemGroup : GameSystem
         }
     }
 
-    public SystemGroup(string name, params IEnumerable<GameSystem> systems)
+    public SystemGroup(Logger logger, string name, params IEnumerable<GameSystem> systems)
+        : base(logger)
     {
         Name = name;
 
@@ -55,6 +58,14 @@ public class SystemGroup : GameSystem
         foreach (GameSystem system in _systems)
         {
             system.Initialize();
+        }
+    }
+
+    public override void BeginRun()
+    {
+        foreach (GameSystem system in _systems)
+        {
+            system.BeginRun();
         }
     }
 

@@ -3,6 +3,7 @@
 using Arch.Core;
 
 using Fantalis.Core.Components;
+using Fantalis.Core.Logging;
 using Fantalis.Core.Math;
 
 namespace Fantalis.Core.Systems;
@@ -11,9 +12,15 @@ public class PlayerSystem : GameSystem
 {
     private readonly IReadOnlyDictionary<string, Player> _players;
     
-    public PlayerSystem(IReadOnlyDictionary<string, Player> players)
+    public PlayerSystem(Logger logger, IReadOnlyDictionary<string, Player> players)
+        : base(logger)
     {
         _players = players;
+    }
+
+    public override void Initialize()
+    {
+        Logger.Log("Initializing player system...");
     }
     
     public override void Update(double deltaTime)
