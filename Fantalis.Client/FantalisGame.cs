@@ -3,19 +3,25 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using Fantalis.Core;
+using Fantalis.Core.Logging;
 
 namespace Fantalis.Client;
 
 public class FantalisGame : Game
 {
     private readonly GraphicsDeviceManager _graphics;
+    private readonly Logger _logger;
     
     private SpriteBatch? _spriteBatch;
-    private GameCore? _world;
+    private GameCore _world;
 
-    public FantalisGame()
+    public FantalisGame(Logger logger)
     {
         _graphics = new GraphicsDeviceManager(this);
+        _logger = logger;
+
+        _world = new GameCore(".", _logger.WithName("Game"));
+        
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
@@ -27,8 +33,14 @@ public class FantalisGame : Game
 
     protected override void LoadContent()
     {
+        _world.Initialize();
+        
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        _world = GameCore.Create(@"C:\Users\User\Documents\Fantalis\Fantalis.Core\Worlds\TestWorld");
+    }
+
+    protected override void BeginRun()
+    {
+        _world.BeginRun();
     }
 
     protected override void Update(GameTime gameTime)
