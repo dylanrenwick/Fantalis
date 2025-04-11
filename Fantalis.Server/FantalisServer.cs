@@ -1,9 +1,85 @@
-﻿namespace Fantalis.Server;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Fantalis.Core;
+using Fantalis.Core.Logging;
+using Fantalis.Server.Net;
+
+namespace Fantalis.Server;
 
 public class FantalisServer
 {
-    public void Start()
+    private const int UpdateInterval = 1000 / 20;
+    
+    private readonly string _rootPath;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+
+    private Logger _logger;
+    private readonly NetworkServer _networkServer;
+    
+    public FantalisServer(string rootPath, Logger defaultLogger)
+    {
+        _rootPath = rootPath
+            ?? throw new ArgumentNullException(nameof(rootPath));
+
+        _logger = defaultLogger;
+        // TODO: Read config from rootPath
+        
+        _networkServer = new NetworkServer(_logger);
+    }
+    
+    public async Task Start()
+    {
+        _logger.Log("Initializing server...");
+        
+        GameCore gameCore = new(_rootPath, _logger.WithName("Game"));
+        gameCore.Initialize();
+        _logger.Log("Game Core initialized.");
+
+        _networkServer.ClientConnected += OnClientConnect;
+        _networkServer.ClientDisconnected += OnClientDisconnect;
+        await _networkServer.Start(8888);
+        _logger.Log("Network server started.");
+
+        await RunServerLoopAsync(gameCore, _cancellationTokenSource.Token);
+    }
+    
+    public async Task Stop()
+    {
+        await _cancellationTokenSource.CancelAsync();
+
+        _cancellationTokenSource.Dispose();
+        await _networkServer.Stop();
+    }
+    
+    private async Task RunServerLoopAsync(GameCore gameCore, CancellationToken cancellationToken)
+    {
+        DateTime lastUpdate = DateTime.UtcNow;
+        
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            DateTime currentTime = DateTime.UtcNow;
+            double deltaTime = (currentTime - lastUpdate).TotalSeconds;
+            lastUpdate = currentTime;
+            
+            gameCore.Update(deltaTime);
+            
+            var elapsed = (int)(DateTime.UtcNow - currentTime).TotalMilliseconds;
+            if (elapsed < UpdateInterval)
+            {
+                await Task.Delay(UpdateInterval - elapsed, cancellationToken);
+            }
+        }
+    }
+
+    private void OnClientConnect(object? _, ClientConnectEventArgs e)
     {
         
+    }
+
+    private void OnClientDisconnect(object? _, ClientConnectEventArgs e)
+    {
+
     }
 }
