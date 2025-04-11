@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-
+using Fantalis.Core.Logging;
 using Fantalis.Core.Systems;
 
 namespace Fantalis.Core;
@@ -10,36 +10,41 @@ public class GameCore
 {
     private readonly string _rootFilePath;
 
+    private readonly Logger _logger;
     private readonly SystemGroup _systems;
-    private readonly ReadOnlyDictionary<string, Room> _rooms;
+    private readonly Dictionary<string, Room> _rooms;
 
     private readonly Dictionary<string, Player> _players;
 
-    /// <summary>
-    /// Internal constructor. Use GameCore.Create to instantiate.
-    /// </summary>
-    /// <param name="rootPath"></param>
-    /// <param name="rooms"></param>
-    private GameCore(string rootPath, IEnumerable<Room> rooms)
+    public GameCore(string rootPath, Logger logger)
     {
         _rootFilePath = rootPath;
+        _logger = logger;
         
-        _rooms = new ReadOnlyDictionary<string, Room>(
-            rooms.ToDictionary(r => r.RoomId)
-        );
-
         _players = [];
+        _rooms = [];
 
         _systems = new SystemGroup(
+            logger,
             "root",
-            new PlayerSystem(_players)
+            new PlayerSystem(logger.SubLogger(nameof(PlayerSystem)), _players)
         );
     }
 
     public void Initialize()
     {
-        // Initialize the game core here
+        _logger.Log("Initializing game core...");
+        // TODO: Read rooms from file
+        List<Room> rooms = [];
+        _logger.Log($"Loaded {rooms.Count} rooms.");
+        
+        _logger.Log("Initializing systems...");
         _systems.Initialize();
+    }
+
+    public void BeginRun()
+    {
+        _systems.BeginRun();
     }
 
     public void Update(double deltaTime)
@@ -83,12 +88,5 @@ public class GameCore
         Player player = new(playerId, roomId);
         _players.Add(playerId, player);
         return player;
-    }
-
-    public static GameCore Create(string rootPath)
-    {
-        // TODO: Read rooms from file
-        List<Room> rooms = [];
-        return new(rootPath, rooms);
     }
 }
