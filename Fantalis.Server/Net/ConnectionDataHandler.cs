@@ -15,5 +15,5 @@ public abstract class ConnectionDataHandler
         Logger = logger;
     }
     
-    public abstract Task HandleData(byte[] buffer, int bytesRead);
+    public abstract Task<ConnectionState> HandleData(byte[] buffer, int bytesRead);
 }
