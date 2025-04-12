@@ -13,10 +13,10 @@ public class FantalisGame : Game
 {
     private readonly GraphicsDeviceManager _graphics;
     private readonly Logger _logger;
+    private readonly GameCore _world;
     
     private SpriteBatch? _spriteBatch;
     private IMGUI? _ui;
-    private GameCore _world;
 
     public FantalisGame(Logger logger)
     {
