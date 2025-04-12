@@ -31,38 +31,27 @@ public class Connection
         
         Server = server;
     }
+    public async Task Disconnect()
+    {
+        State = ConnectionState.Disconnected;
+        // Shutdown to complete pending sends before cancelling
+        _client.Shutdown(SocketShutdown.Both);
 
-    public async Task Listen(CancellationToken token)
+        await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
+        _client.Close();
+
+        Disconnected?.Invoke(this, new ClientConnectEventArgs(this));
+    }
+
+
+    public async Task StartListening(CancellationToken serverToken)
     {
         _ = VerificationTimeout(30);
-        
+
         try
         {
-            while (State != ConnectionState.Disconnected && !token.IsCancellationRequested)
-            {
-                if (!_client.Connected)
-                {
-                    await Disconnect();
-                    break;
-                }
-
-                if (_client.Available == 0)
-                {
-                    await Task.Delay(15, _cancellationTokenSource.Token);
-                    continue;
-                }
-
-                int bytesRead = await _client.ReceiveAsync(_buffer, SocketFlags.None, _cancellationTokenSource.Token);
-                if (bytesRead == 0)
-                {
-                    await Disconnect();
-                    break;
-                }
-
-                _logger.Log($"Received {bytesRead} bytes");
-
-                await ProcessData(bytesRead);
-            }
+            await ListenForData(serverToken);
         }
         catch (SocketException e)
         {
@@ -81,17 +70,35 @@ public class Connection
         }
     }
 
-    public async Task Disconnect()
+    private async Task ListenForData(CancellationToken serverToken)
     {
-        State = ConnectionState.Disconnected;
-        // Shutdown to complete pending sends before cancelling
-        _client.Shutdown(SocketShutdown.Both);
+        CancellationToken token = _cancellationTokenSource.Token;
 
-        await _cancellationTokenSource.CancelAsync();
-        _cancellationTokenSource.Dispose();
-        _client.Close();
+        while (State != ConnectionState.Disconnected && !serverToken.IsCancellationRequested)
+        {
+            if (!_client.Connected)
+            {
+                await Disconnect();
+                break;
+            }
 
-        Disconnected?.Invoke(this, new ClientConnectEventArgs(this));
+            if (_client.Available == 0)
+            {
+                await Task.Delay(15, token);
+                continue;
+            }
+
+            int bytesRead = await _client.ReceiveAsync(_buffer, SocketFlags.None, token);
+            if (bytesRead == 0)
+            {
+                await Disconnect();
+                break;
+            }
+
+            _logger.Log($"Received {bytesRead} bytes");
+
+            await ProcessData(bytesRead);
+        }
     }
 
     private async Task ProcessData(int bytesRead)
