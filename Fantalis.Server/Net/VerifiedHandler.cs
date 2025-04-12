@@ -10,8 +10,8 @@ public class VerifiedHandler : ConnectionDataHandler
         : base(connection, logger) { }
 
 
-    public override async Task HandleData(byte[] buffer, int bytesRead)
+    public override async Task<ConnectionState> HandleData(byte[] buffer, int bytesRead)
     {
-        
+        return ConnectionState.Verified;
     }
 }
