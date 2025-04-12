@@ -14,9 +14,10 @@ public class FantalisServer
     
     private readonly string _rootPath;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly NetworkServer _networkServer;
 
     private Logger _logger;
-    private readonly NetworkServer _networkServer;
+    private Task? _networkTask;
     
     public FantalisServer(string rootPath, Logger defaultLogger)
     {
@@ -39,7 +40,7 @@ public class FantalisServer
 
         _networkServer.ClientConnected += OnClientConnect;
         _networkServer.ClientDisconnected += OnClientDisconnect;
-        await _networkServer.Start(8888);
+        _networkTask = _networkServer.Start(8888);
         _logger.Log("Network server started.");
 
         await RunServerLoopAsync(gameCore, _cancellationTokenSource.Token);
@@ -48,9 +49,14 @@ public class FantalisServer
     public async Task Stop()
     {
         await _cancellationTokenSource.CancelAsync();
-
         _cancellationTokenSource.Dispose();
+
         await _networkServer.Stop();
+        // Wait for network server to stop
+        if (_networkTask is not null)
+        {
+            await _networkTask;
+        }
     }
     
     private async Task RunServerLoopAsync(GameCore gameCore, CancellationToken cancellationToken)
