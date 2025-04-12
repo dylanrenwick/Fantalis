@@ -10,8 +10,6 @@ namespace Fantalis.Server.Net;
 
 public class Connection
 {
-    private readonly TcpClient _client;
-    private readonly NetworkStream _stream;
     private readonly Guid _id = Guid.NewGuid();
     
     private readonly Logger _logger;
@@ -28,7 +26,6 @@ public class Connection
     {
         _logger = logger.SubLogger(_id.ToString());
         _client = client;
-        _stream = client.GetStream();
         
         Server = server;
     }
@@ -80,7 +77,20 @@ public class Connection
 
     private async Task ProcessData(int bytesRead)
     {
-        
+        ConnectionDataHandler handler = GetHandler();
+        await handler.HandleData(_buffer, bytesRead);
+    }
+
+    private ConnectionDataHandler GetHandler()
+    {
+        return State switch
+        {
+            ConnectionState.Connected => new ConnectedHandler(this, _logger),
+            ConnectionState.Verified => new VerifiedHandler(this, _logger),
+            ConnectionState.InGame => throw new NotImplementedException(),
+            ConnectionState.Disconnected => throw new InvalidOperationException(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     public enum ConnectionState
