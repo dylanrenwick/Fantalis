@@ -41,7 +41,7 @@ public class NetworkServer
 
         try
         {
-            ProtocolVersion = GetProtocolVersion();
+            ProtocolVersion = NetPacket.GetProtocolVersion();
             
             TcpListener listener = new(IPAddress.Any, port);
             listener.Start();
@@ -83,24 +83,5 @@ public class NetworkServer
         ClientConnected?.Invoke(this, new ClientConnectEventArgs(connection));
         
         await connection.Listen();
-    }
-    
-    private static byte[] GetProtocolVersion()
-    {
-        // Fetch AssemblyName of Fantalis.Core
-        Type packetType = typeof(Packet);
-        Assembly coreAssembly = packetType.Assembly;
-        AssemblyName assemblyName = coreAssembly.GetName();
-        
-        // Obtain bytes of version and public key
-        var version = assemblyName.Version!.ToString();
-        byte[] versionBytes = Encoding.ASCII.GetBytes(version);
-        byte[] tokenBytes = assemblyName.GetPublicKeyToken()!;
-        
-        var bytes = new byte[versionBytes.Length + tokenBytes.Length];
-        versionBytes.CopyTo(bytes, 0);
-        tokenBytes.CopyTo(bytes, versionBytes.Length);
-
-        return bytes;
     }
 }
