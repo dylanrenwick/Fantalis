@@ -12,16 +12,25 @@ public class Connection
 {
     private readonly TcpClient _client;
     private readonly NetworkStream _stream;
+    private readonly Guid _id = Guid.NewGuid();
+    
+    private readonly Logger _logger;
+    private readonly Socket _client;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     
     private readonly byte[] _buffer = new byte[1024];
     
+    public NetworkServer Server { get; set; }
+    
     public ConnectionState State { get; private set; }
 
-    public Connection(TcpClient client)
+    public Connection(Logger logger, NetworkServer server, Socket client)
     {
+        _logger = logger.SubLogger(_id.ToString());
         _client = client;
         _stream = client.GetStream();
+        
+        Server = server;
     }
 
     public async Task Listen()
@@ -42,7 +51,7 @@ public class Connection
                     continue;
                 }
 
-                int bytesRead = await _stream.ReadAsync(_buffer, _cancellationTokenSource.Token);
+                int bytesRead = await _client.ReceiveAsync(_buffer, SocketFlags.None, _cancellationTokenSource.Token);
                 if (bytesRead == 0)
                 {
                     await Disconnect();
@@ -67,7 +76,6 @@ public class Connection
         State = ConnectionState.Disconnected;
         await _cancellationTokenSource.CancelAsync();
         _client.Close();
-        _stream.Close();
     }
 
     private async Task ProcessData(int bytesRead)
@@ -81,8 +89,6 @@ public class Connection
         Connected,
         // Game client version has been verified
         Verified,
-        // Client has signed in
-        SignedIn,
         // Client is in game
         InGame,
         // Connection has been disconnected

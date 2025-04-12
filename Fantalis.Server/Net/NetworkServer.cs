@@ -60,7 +60,7 @@ public class NetworkServer
         {
             try
             {
-                TcpClient client = await listener.AcceptTcpClientAsync(token);
+                Socket client = await listener.AcceptSocketAsync(token);
                 _ = HandleNewConnection(client, token);
             }
             catch (OperationCanceledException)
@@ -71,9 +71,9 @@ public class NetworkServer
         }
     }
 
-    private async Task HandleNewConnection(TcpClient client, CancellationToken token)
+    private async Task HandleNewConnection(Socket client, CancellationToken token)
     {
-        Connection connection = new(client);
+        Connection connection = new(_logger.WithName("Connect"), this, client);
         ClientConnected?.Invoke(this, new ClientConnectEventArgs(connection));
         
         await connection.Listen();
