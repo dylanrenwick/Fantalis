@@ -48,6 +48,7 @@ public class FantalisServer
     
     public async Task Stop()
     {
+        _logger.Log("Stopping server...");
         await _cancellationTokenSource.CancelAsync();
         _cancellationTokenSource.Dispose();
 

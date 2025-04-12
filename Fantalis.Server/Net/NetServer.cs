@@ -58,13 +58,14 @@ public class NetServer
     
     public async Task Stop()
     {
-        _logger.Log("Stopping");
+        _logger.Log("Stopping...");
         _isRunning = false;
 
         await _cancellationTokenSource.CancelAsync();
         _cancellationTokenSource.Dispose();
 
         _listener?.Stop();
+        _listener?.Dispose();
     }
     
     private async Task ListenForConnections(CancellationToken token)

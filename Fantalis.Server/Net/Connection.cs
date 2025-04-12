@@ -49,6 +49,7 @@ public class Connection
 
     public async Task Disconnect()
     {
+        _logger.Log("Disconnecting...");
         State = ConnectionState.Disconnected;
         // Shutdown to complete pending sends before cancelling
         _client.Shutdown(SocketShutdown.Both);
