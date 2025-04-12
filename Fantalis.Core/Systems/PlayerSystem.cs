@@ -11,11 +11,14 @@ namespace Fantalis.Core.Systems;
 public class PlayerSystem : GameSystem
 {
     private readonly IReadOnlyDictionary<string, Player> _players;
+    private readonly QueryDescription _playerQuery;
     
     public PlayerSystem(Logger logger, IReadOnlyDictionary<string, Player> players)
         : base(logger)
     {
         _players = players;
+        _playerQuery = new QueryDescription()
+            .WithAll<Position, PlayerFlag>();
     }
 
     public override void Initialize()
@@ -25,9 +28,8 @@ public class PlayerSystem : GameSystem
     
     public override void Update(double deltaTime)
     {
-        var playerQuery = new QueryDescription().WithAll<Position, PlayerFlag>();
         World.Query(
-            in playerQuery,
+            in _playerQuery,
             (Entity _, ref Position pos, ref PlayerFlag playerFlag) =>
             {
                 if (!_players.TryGetValue(playerFlag.Id, out Player? player))
