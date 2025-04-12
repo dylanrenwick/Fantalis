@@ -103,7 +103,7 @@ public class Connection
     private async Task ProcessData(int bytesRead)
     {
         ConnectionDataHandler handler = GetHandler();
-        await handler.HandleData(_buffer, bytesRead);
+        State = await handler.HandleData(_buffer, bytesRead);
     }
 
     private async Task VerificationTimeout(int seconds)
@@ -115,6 +115,7 @@ public class Connection
             _logger.Log($"Verification timed out after {seconds} seconds. Disconnecting.");
             await Disconnect();
         }
+        else _logger.Log($"Verification timer cancelled. State: {State}");
     }
 
     private ConnectionDataHandler GetHandler()
