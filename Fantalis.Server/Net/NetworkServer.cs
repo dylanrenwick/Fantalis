@@ -89,8 +89,17 @@ public class NetworkServer
     {
         Connection connection = new(_logger.WithName("Connect"), this, client);
         connection.Disconnected += (_, args) => ClientDisconnected?.Invoke(this, args);
-        ClientConnected?.Invoke(this, new ClientConnectEventArgs(connection));
+        connection.StateChanged += OnConnectionStateChange;
 
         await connection.StartListening(token);
+    }
+
+    private void OnConnectionStateChange(object? _, ClientConnectEventArgs args)
+    {
+        Connection conn = args.Connection;
+        if (conn.State == ConnectionState.Verified)
+        {
+            ClientConnected?.Invoke(this, args);
+        }
     }
 }

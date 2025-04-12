@@ -11,6 +11,7 @@ namespace Fantalis.Server.Net;
 public class Connection
 {
     public event EventHandler<ClientConnectEventArgs>? Disconnected;
+    public event EventHandler<ClientConnectEventArgs>? StateChanged;
 
     private readonly Guid _id = Guid.NewGuid();
     
@@ -21,8 +22,22 @@ public class Connection
     private readonly byte[] _buffer = new byte[1024];
     
     public NetworkServer Server { get; }
-    
-    public ConnectionState State { get; private set; }
+
+    private ConnectionState _state;
+    public ConnectionState State
+    {
+        get => _state;
+        private set
+        {
+            if (_state == value)
+            {
+                return;
+            }
+
+            _state = value;
+            StateChanged?.Invoke(this, new(this));
+        }
+    }
 
     public Connection(Logger logger, NetworkServer server, Socket client)
     {

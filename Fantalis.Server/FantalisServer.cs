@@ -79,12 +79,12 @@ public class FantalisServer
         }
     }
 
-    private void OnClientConnect(object? _, ClientConnectEventArgs e)
+    private void OnClientConnect(object? _, ClientConnectEventArgs args)
     {
         
     }
 
-    private void OnClientDisconnect(object? _, ClientConnectEventArgs e)
+    private void OnClientDisconnect(object? _, ClientConnectEventArgs args)
     {
 
     }
