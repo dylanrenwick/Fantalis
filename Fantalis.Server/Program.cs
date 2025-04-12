@@ -1,14 +1,23 @@
-﻿using Fantalis.Core.Logging;
-using Fantalis.Server;
+﻿using System.Threading.Tasks;
 
-Logger logger = new(
-    "Server",
-    new ConsoleDestination(
-        new LogFormatter(msg
-            => $"[{msg.Time}]{msg.LoggerName,8}{(msg.SubName.Length > 0 ? "-"+msg.SubName : string.Empty)}| {msg.Message}"
-        )
-    )
-);
+using Fantalis.Core.Logging;
 
-FantalisServer server = new(".", logger);
-await server.Start();
+namespace Fantalis.Server;
+
+public static class Program
+{
+    private static readonly LogFormatter _standardFormat = new(
+        msg => $"[{msg.Time}]{msg.LoggerName,8}{(msg.SubName.Length > 0 ? "-" + msg.SubName : string.Empty)}| {msg.Message}"
+    );
+
+    private static async Task Main(string[] args)
+    {
+        Logger logger = new(
+            "Server",
+            new ConsoleDestination(_standardFormat)
+        );
+
+        FantalisServer server = new(".", logger);
+        await server.Start();
+    }
+}
