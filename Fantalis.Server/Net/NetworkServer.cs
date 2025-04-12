@@ -17,13 +17,15 @@ public class NetworkServer
     public event EventHandler<ClientConnectEventArgs>? ClientConnected;
     public event EventHandler<ClientConnectEventArgs>? ClientDisconnected;
 
-    private bool _isRunning = false;
-    public byte[] ProtocolVersion { get; private set; } = [];
-    
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly List<Connection> _connections = [];
     
     private readonly Logger _logger;
+    
+    private bool _isRunning = false;
+    private TcpListener? _listener;
+
+    public byte[] ProtocolVersion { get; private set; } = [];
     
     public NetworkServer(Logger logger)
     {
@@ -43,10 +45,10 @@ public class NetworkServer
         {
             ProtocolVersion = NetPacket.GetProtocolVersion();
             
-            TcpListener listener = new(IPAddress.Any, port);
-            listener.Start();
+            _listener = new(IPAddress.Any, port);
+            _listener.Start();
 
-            _ = ListenForConnections(listener, _cancellationTokenSource.Token);
+            _ = ListenForConnections(_cancellationTokenSource.Token);
         }
         catch (Exception e)
         {
@@ -57,16 +59,19 @@ public class NetworkServer
     
     public async Task Stop()
     {
-        
+        _logger.Log("Stopping");
+        _isRunning = false;
+        await _cancellationTokenSource.CancelAsync();
+        _listener?.Stop();
     }
     
-    private async Task ListenForConnections(TcpListener listener, CancellationToken token)
+    private async Task ListenForConnections(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
             try
             {
-                Socket client = await listener.AcceptSocketAsync(token);
+                Socket client = await _listener!.AcceptSocketAsync(token);
                 _ = HandleNewConnection(client, token);
             }
             catch (OperationCanceledException)
