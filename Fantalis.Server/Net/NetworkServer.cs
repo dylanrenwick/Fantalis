@@ -88,6 +88,6 @@ public class NetworkServer
         connection.Disconnected += (_, args) => ClientDisconnected?.Invoke(this, args);
         ClientConnected?.Invoke(this, new ClientConnectEventArgs(connection));
         
-        await connection.Listen();
+        await connection.Listen(token);
     }
 }

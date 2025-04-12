@@ -32,13 +32,13 @@ public class Connection
         Server = server;
     }
 
-    public async Task Listen()
+    public async Task Listen(CancellationToken token)
     {
         _ = VerificationTimeout(30);
         
         try
         {
-            while (State != ConnectionState.Disconnected)
+            while (State != ConnectionState.Disconnected && !token.IsCancellationRequested)
             {
                 if (!_client.Connected)
                 {
