@@ -27,7 +27,7 @@ public class FantalisServer
         _logger = defaultLogger;
         // TODO: Read config from rootPath
         
-        _networkServer = new NetServer(_logger);
+        _networkServer = new NetServer(_logger.WithName("Net"));
     }
     
     public async Task Start()
