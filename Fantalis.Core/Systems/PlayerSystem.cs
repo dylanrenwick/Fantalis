@@ -34,7 +34,7 @@ public class PlayerSystem : GameSystem
             {
                 if (!_players.TryGetValue(playerFlag.Id, out Player? player))
                 {
-                    // TODO: log warning
+                    Logger.Log("Entity exists with player Id {playerFlag.Id}, but no player was found.");
                     return;
                 }
                 
