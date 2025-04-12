@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Fantalis.Core.Logging;
+using Fantalis.Core.Net;
 
 namespace Fantalis.Server.Net;
 
@@ -15,6 +18,7 @@ public class NetworkServer
     public event EventHandler<ClientConnectEventArgs>? ClientDisconnected;
 
     private bool _isRunning = false;
+    public byte[] ProtocolVersion { get; private set; } = [];
     
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly List<Connection> _connections = [];
@@ -37,6 +41,8 @@ public class NetworkServer
 
         try
         {
+            ProtocolVersion = GetProtocolVersion();
+            
             TcpListener listener = new(IPAddress.Any, port);
             listener.Start();
 
@@ -48,7 +54,7 @@ public class NetworkServer
             throw;
         }
     }
-
+    
     public async Task Stop()
     {
         
@@ -77,5 +83,24 @@ public class NetworkServer
         ClientConnected?.Invoke(this, new ClientConnectEventArgs(connection));
         
         await connection.Listen();
+    }
+    
+    private static byte[] GetProtocolVersion()
+    {
+        // Fetch AssemblyName of Fantalis.Core
+        Type packetType = typeof(Packet);
+        Assembly coreAssembly = packetType.Assembly;
+        AssemblyName assemblyName = coreAssembly.GetName();
+        
+        // Obtain bytes of version and public key
+        var version = assemblyName.Version!.ToString();
+        byte[] versionBytes = Encoding.ASCII.GetBytes(version);
+        byte[] tokenBytes = assemblyName.GetPublicKeyToken()!;
+        
+        var bytes = new byte[versionBytes.Length + tokenBytes.Length];
+        versionBytes.CopyTo(bytes, 0);
+        tokenBytes.CopyTo(bytes, versionBytes.Length);
+
+        return bytes;
     }
 }
