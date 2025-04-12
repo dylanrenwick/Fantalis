@@ -10,6 +10,8 @@ namespace Fantalis.Server.Net;
 
 public class Connection
 {
+    public event EventHandler<ClientConnectEventArgs>? Disconnected;
+
     private readonly Guid _id = Guid.NewGuid();
     
     private readonly Logger _logger;
@@ -77,6 +79,7 @@ public class Connection
         State = ConnectionState.Disconnected;
         await _cancellationTokenSource.CancelAsync();
         _client.Close();
+        Disconnected?.Invoke(this, new ClientConnectEventArgs(this));
     }
 
     private async Task ProcessData(int bytesRead)

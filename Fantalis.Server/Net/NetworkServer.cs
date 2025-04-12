@@ -85,6 +85,7 @@ public class NetworkServer
     private async Task HandleNewConnection(Socket client, CancellationToken token)
     {
         Connection connection = new(_logger.WithName("Connect"), this, client);
+        connection.Disconnected += (_, args) => ClientDisconnected?.Invoke(this, args);
         ClientConnected?.Invoke(this, new ClientConnectEventArgs(connection));
         
         await connection.Listen();
