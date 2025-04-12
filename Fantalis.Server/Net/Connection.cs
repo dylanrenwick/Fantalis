@@ -21,7 +21,7 @@ public class Connection
     
     private readonly byte[] _buffer = new byte[1024];
     
-    public NetworkServer Server { get; }
+    public NetServer Server { get; }
 
     private ConnectionState _state;
     public ConnectionState State
@@ -39,7 +39,7 @@ public class Connection
         }
     }
 
-    public Connection(Logger logger, NetworkServer server, Socket client)
+    public Connection(Logger logger, NetServer server, Socket client)
     {
         _logger = logger.SubLogger(_id.ToString());
         _client = client;

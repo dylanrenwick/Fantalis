@@ -10,7 +10,7 @@ using Fantalis.Core.Net;
 
 namespace Fantalis.Server.Net;
 
-public class NetworkServer
+public class NetServer
 {
     public event EventHandler<ClientConnectEventArgs>? ClientConnected;
     public event EventHandler<ClientConnectEventArgs>? ClientDisconnected;
@@ -25,7 +25,7 @@ public class NetworkServer
 
     public byte[] ProtocolVersion { get; private set; } = [];
     
-    public NetworkServer(Logger logger)
+    public NetServer(Logger logger)
     {
         _logger = logger;
     }

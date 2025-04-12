@@ -14,7 +14,7 @@ public class FantalisServer
     
     private readonly string _rootPath;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private readonly NetworkServer _networkServer;
+    private readonly NetServer _networkServer;
 
     private Logger _logger;
     private Task? _networkTask;
@@ -27,7 +27,7 @@ public class FantalisServer
         _logger = defaultLogger;
         // TODO: Read config from rootPath
         
-        _networkServer = new NetworkServer(_logger);
+        _networkServer = new NetServer(_logger);
     }
     
     public async Task Start()
@@ -81,7 +81,8 @@ public class FantalisServer
 
     private void OnClientConnect(object? _, ClientConnectEventArgs args)
     {
-        
+        // Expect that client will next send login details,
+        // to be compared against SQLite database
     }
 
     private void OnClientDisconnect(object? _, ClientConnectEventArgs args)
