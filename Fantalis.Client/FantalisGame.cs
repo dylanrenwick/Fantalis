@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+
+using Apos.Gui;
+using FontStashSharp;
 
 using Fantalis.Core;
 using Fantalis.Core.Logging;
@@ -13,6 +15,7 @@ public class FantalisGame : Game
     private readonly Logger _logger;
     
     private SpriteBatch? _spriteBatch;
+    private IMGUI? _ui;
     private GameCore _world;
 
     public FantalisGame(Logger logger)
@@ -33,9 +36,16 @@ public class FantalisGame : Game
 
     protected override void LoadContent()
     {
-        _world.Initialize();
-        
+        FontSystem fontSystem = new();
+        fontSystem.AddFont(TitleContainer.OpenStream($"{Content.RootDirectory}/BitPotion.ttf"));
+
+        GuiHelper.Setup(this, fontSystem);
+        _ui = new IMGUI();
+        GuiHelper.CurrentIMGUI = _ui;
+
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+        _world.Initialize();
     }
 
     protected override void BeginRun()
@@ -53,12 +63,20 @@ public class FantalisGame : Game
 
         _world.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
+        _ui!.UpdateStart(gameTime);
+
+        
+
+        _ui!.UpdateEnd(gameTime);
+        GuiHelper.UpdateCleanup();
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
+
+        _ui!.Draw(gameTime);
 
         base.Draw(gameTime);
     }
