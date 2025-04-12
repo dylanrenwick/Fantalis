@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 using Fantalis.Core.Logging;
 
@@ -18,6 +19,8 @@ public static class Program
         );
 
         FantalisServer server = new(".", logger);
-        await server.Start();
+        _ = server.Start();
+        Console.ReadLine();
+        await server.Stop();
     }
 }
