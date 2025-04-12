@@ -57,6 +57,8 @@ public class Connection
                     break;
                 }
 
+                _logger.Log($"Received {bytesRead} bytes");
+
                 await ProcessData(bytesRead);
             }
         }
@@ -105,5 +107,4 @@ public class Connection
             _ => throw new ArgumentOutOfRangeException()
         };
     }
-
 }

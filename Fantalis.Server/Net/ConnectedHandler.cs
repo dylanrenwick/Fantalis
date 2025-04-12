@@ -28,6 +28,7 @@ public class ConnectedHandler : ConnectionDataHandler
         }
 
         // Version was a match, connection is verified.
+        Logger.Log($"Protocol version verified.");
         return ConnectionState.Verified;
     }
 }

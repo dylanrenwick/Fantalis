@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +19,7 @@ public class NetworkServer
     private readonly List<Connection> _connections = [];
     
     private readonly Logger _logger;
-    
+
     private bool _isRunning = false;
     private TcpListener? _listener;
 
@@ -39,12 +37,13 @@ public class NetworkServer
             return;
         }
         
+        _logger.Log("Starting");
         _isRunning = true;
 
         try
         {
             ProtocolVersion = NetPacket.GetProtocolVersion();
-            
+
             _listener = new(IPAddress.Any, port);
             _listener.Start();
 
@@ -72,6 +71,7 @@ public class NetworkServer
             try
             {
                 Socket client = await _listener!.AcceptSocketAsync(token);
+                _logger.Log($"New connection from {client.RemoteEndPoint}:{client.LocalEndPoint}");
                 _ = HandleNewConnection(client, token);
             }
             catch (OperationCanceledException)
