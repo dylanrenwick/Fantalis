@@ -31,6 +31,7 @@ public class Connection
         
         Server = server;
     }
+
     public async Task Disconnect()
     {
         State = ConnectionState.Disconnected;
@@ -44,7 +45,6 @@ public class Connection
         Disconnected?.Invoke(this, new ClientConnectEventArgs(this));
     }
 
-
     public async Task StartListening(CancellationToken serverToken)
     {
         _ = VerificationTimeout(30);
@@ -56,16 +56,17 @@ public class Connection
         catch (SocketException e)
         {
             _logger.Log($"Socket error: {e.SocketErrorCode} {e.Message}");
-            await Disconnect();
         }
         catch (IOException e)
         {
             _logger.Log($"IO error: {e.Message}");
-            await Disconnect();
         }
         catch (OperationCanceledException)
         {
             _logger.Log("Thread is cancelling.");
+        }
+        finally
+        {
             await Disconnect();
         }
     }
@@ -78,7 +79,6 @@ public class Connection
         {
             if (!_client.Connected)
             {
-                await Disconnect();
                 break;
             }
 
@@ -91,7 +91,6 @@ public class Connection
             int bytesRead = await _client.ReceiveAsync(_buffer, SocketFlags.None, token);
             if (bytesRead == 0)
             {
-                await Disconnect();
                 break;
             }
 
