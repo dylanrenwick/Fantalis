@@ -60,7 +60,10 @@ public class NetworkServer
     {
         _logger.Log("Stopping");
         _isRunning = false;
+
         await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
+
         _listener?.Stop();
     }
     

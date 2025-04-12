@@ -86,8 +86,11 @@ public class Connection
         State = ConnectionState.Disconnected;
         // Shutdown to complete pending sends before cancelling
         _client.Shutdown(SocketShutdown.Both);
+
         await _cancellationTokenSource.CancelAsync();
+        _cancellationTokenSource.Dispose();
         _client.Close();
+
         Disconnected?.Invoke(this, new ClientConnectEventArgs(this));
     }
 
