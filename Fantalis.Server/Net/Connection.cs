@@ -32,6 +32,8 @@ public class Connection
 
     public async Task Listen()
     {
+        _ = VerificationTimeout(30);
+        
         try
         {
             while (State != ConnectionState.Disconnected)
@@ -79,6 +81,17 @@ public class Connection
     {
         ConnectionDataHandler handler = GetHandler();
         await handler.HandleData(_buffer, bytesRead);
+    }
+
+    private async Task VerificationTimeout(int seconds)
+    {
+        await Task.Delay(seconds * 1000);
+        
+        if (State == ConnectionState.Connected)
+        {
+            _logger.Log($"Verification timed out after {seconds} seconds. Disconnecting.");
+            await Disconnect();
+        }
     }
 
     private ConnectionDataHandler GetHandler()
