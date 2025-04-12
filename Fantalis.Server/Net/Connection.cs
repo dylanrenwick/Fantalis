@@ -18,7 +18,7 @@ public class Connection
     
     private readonly byte[] _buffer = new byte[1024];
     
-    public NetworkServer Server { get; set; }
+    public NetworkServer Server { get; }
     
     public ConnectionState State { get; private set; }
 
