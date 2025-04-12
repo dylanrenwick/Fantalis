@@ -64,12 +64,19 @@ public class Connection
                 await ProcessData(bytesRead);
             }
         }
-        catch (IOException)
+        catch (SocketException e)
         {
+            _logger.Log($"Socket error: {e.SocketErrorCode} {e.Message}");
+            await Disconnect();
+        }
+        catch (IOException e)
+        {
+            _logger.Log($"IO error: {e.Message}");
             await Disconnect();
         }
         catch (OperationCanceledException)
         {
+            _logger.Log("Thread is cancelling.");
             await Disconnect();
         }
     }
