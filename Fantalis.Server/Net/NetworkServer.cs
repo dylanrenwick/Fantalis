@@ -47,7 +47,7 @@ public class NetworkServer
             _listener = new(IPAddress.Any, port);
             _listener.Start();
 
-            _ = ListenForConnections(_cancellationTokenSource.Token);
+            await ListenForConnections(_cancellationTokenSource.Token);
         }
         catch (Exception e)
         {
@@ -87,7 +87,7 @@ public class NetworkServer
         Connection connection = new(_logger.WithName("Connect"), this, client);
         connection.Disconnected += (_, args) => ClientDisconnected?.Invoke(this, args);
         ClientConnected?.Invoke(this, new ClientConnectEventArgs(connection));
-        
+
         await connection.Listen(token);
     }
 }
