@@ -15,7 +15,7 @@ public class Connection
 
     private readonly Guid _id = Guid.NewGuid();
     
-    private readonly Logger _logger;
+    public readonly Logger Logger;
     private readonly Socket _client;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     
@@ -23,13 +23,13 @@ public class Connection
 
     public Connection(Logger logger, Socket client)
     {
-        _logger = logger.SubLogger(_id.ToString());
+        Logger = logger.SubLogger(_id.ToString());
         _client = client;
     }
 
     public async Task Disconnect()
     {
-        _logger.Log("Disconnecting...");
+        Logger.Log("Disconnecting...");
         // Shutdown to complete pending sends before cancelling
         _client.Shutdown(SocketShutdown.Both);
 
@@ -48,15 +48,15 @@ public class Connection
         }
         catch (SocketException e)
         {
-            _logger.Log($"Socket error: {e.SocketErrorCode} {e.Message}");
+            Logger.Log($"Socket error: {e.SocketErrorCode} {e.Message}");
         }
         catch (IOException e)
         {
-            _logger.Log($"IO error: {e.Message}");
+            Logger.Log($"IO error: {e.Message}");
         }
         catch (OperationCanceledException)
         {
-            _logger.Log("Thread is cancelling.");
+            Logger.Log("Thread is cancelling.");
         }
         finally
         {
@@ -82,7 +82,7 @@ public class Connection
                 break;
             }
 
-            _logger.Log($"Received {bytesRead} bytes");
+            Logger.Log($"Received {bytesRead} bytes");
 
             DataReceived?.Invoke(this, new ConnectionDataEventArgs(this, bytesRead, _buffer));
         }
