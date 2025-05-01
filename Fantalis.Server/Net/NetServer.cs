@@ -17,19 +17,18 @@ public class NetServer
     public event EventHandler<ConnectionDataEventArgs>? DataReceived;
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private readonly List<Connection> _connections = [];
+    private readonly HashSet<Connection> _connections = [];
     
+    private readonly Socket _listener;
     private readonly Logger _logger;
     private readonly Lock _lock;
 
     private bool _isRunning = false;
-    private TcpListener? _listener;
-
-    public byte[] ProtocolVersion { get; private set; } = [];
     
     public NetServer(Logger logger)
     {
         _logger = logger;
+        _listener = new Socket(SocketType.Stream, ProtocolType.Tcp);
     }
     
     public async Task Start(int port)
@@ -44,16 +43,16 @@ public class NetServer
 
         try
         {
-            ProtocolVersion = NetPacket.GetProtocolVersion();
-
-            _listener = new(IPAddress.Any, port);
-            _listener.Start();
+            _listener.Bind(new IPEndPoint(IPAddress.Any, port));
+            // TODO: Read config from file
+            _listener.Listen(10);
 
             await ListenForConnections(_cancellationTokenSource.Token);
         }
-        catch (Exception e)
+        catch (SocketException e)
         {
-            Console.WriteLine(e);
+            _logger.Log("Socket error:");
+            _logger.Log(e.ToString());
             throw;
         }
     }
@@ -66,8 +65,8 @@ public class NetServer
         await _cancellationTokenSource.CancelAsync();
         _cancellationTokenSource.Dispose();
 
-        _listener?.Stop();
-        _listener?.Dispose();
+        _listener.Close();
+        _listener.Dispose();
     }
     
     private async Task ListenForConnections(CancellationToken token)
@@ -76,9 +75,9 @@ public class NetServer
         {
             try
             {
-                Socket client = await _listener!.AcceptSocketAsync(token);
-                _logger.Log($"New connection from {client.RemoteEndPoint}:{client.LocalEndPoint}");
-                _ = HandleNewConnection(client, token);
+                Socket socket = await _listener.AcceptAsync(token);
+                _logger.Log($"New connection from {socket.RemoteEndPoint}:{socket.LocalEndPoint}");
+                _ = HandleNewConnection(socket, token);
             }
             catch (OperationCanceledException)
             {
@@ -88,15 +87,29 @@ public class NetServer
         }
     }
 
-    private async Task HandleNewConnection(Socket client, CancellationToken token)
+    private async Task HandleNewConnection(Socket socket, CancellationToken token)
     {
-        Connection connection = new(_logger.WithName("Connect"), client);
-        connection.Disconnected += (_, args) => Disconnect?.Invoke(this, args);
+        Connection connection = new(_logger.WithName("Connect"), socket);
+        connection.Disconnected += (_, args) => HandleDisconnect(args);
         connection.DataReceived += DataReceived;
+
+        lock (_lock)
+        {
+            _connections.Add(connection);
+        }
 
         NewConnection?.Invoke(this, new ConnectionEventArgs(connection));
 
         await connection.StartListening(token);
     }
 
+    private void HandleDisconnect(ConnectionEventArgs args)
+    {
+        lock (_lock)
+        {
+            _connections.Remove(args.Connection);
+        }
+
+        Disconnect?.Invoke(this, args);
+    }
 }
