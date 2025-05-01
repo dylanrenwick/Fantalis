@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 
 using Fantalis.Core.Logging;
 
@@ -10,81 +8,129 @@ namespace Fantalis.Core.Net;
 
 public class Connection
 {
-    public event EventHandler<ConnectionEventArgs>? Disconnected;
-    public event EventHandler<ConnectionDataEventArgs>? DataReceived;
+    public event EventHandler? Disconnected;
+    public event EventHandler<ConnectionDataEventArgs>? DataAvailable;
 
-    private readonly Guid _id = Guid.NewGuid();
+    public bool IsVerified { get; set; } = false;
+
+    public readonly Guid Id = Guid.NewGuid();
     
     public readonly Logger Logger;
+
     private readonly Socket _client;
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
-    
-    private readonly byte[] _buffer = new byte[1024];
+    private readonly Thread _thread;
 
     public Connection(Logger logger, Socket client)
     {
-        Logger = logger.SubLogger(_id.ToString());
+        Logger = logger.SubLogger(Id.ToString());
         _client = client;
+        _thread = new Thread(BeginListen)
+        {
+            IsBackground = true,
+            Name = $"Connection {Id}"
+        };
     }
 
-    public async Task Disconnect()
+    public void Disconnect()
     {
+        if (!_client.Connected)
+        {
+            return;
+        }
+
         Logger.Log("Disconnecting...");
         // Shutdown to complete pending sends before cancelling
         _client.Shutdown(SocketShutdown.Both);
-
-        await _cancellationTokenSource.CancelAsync();
-        _cancellationTokenSource.Dispose();
         _client.Close();
 
-        Disconnected?.Invoke(this, new ConnectionEventArgs(this));
+        _thread.Interrupt();
+
+        Disconnected?.Invoke(this, EventArgs.Empty);
     }
 
-    public async Task StartListening(CancellationToken serverToken)
+    public void StartListening()
+    {
+        Logger.Log("Starting to listen for data...");
+        _thread.Start();
+    }
+
+    public void Send(byte[] data)
+    {
+        if (!_client.Connected)
+        {
+            return;
+        }
+
+        try
+        {
+            _client.Send(data);
+        }
+        catch (SocketException e)
+        {
+            Logger.Log($"Socket error: {e.SocketErrorCode} {e.Message}");
+            Disconnect();
+        }
+    }
+    
+    public int Read(ref byte[] buffer)
+        => Read(ref buffer, 0, buffer.Length);
+    public int Read(ref byte[] buffer, int offset, int count)
+    {
+        if (!_client.Connected)
+        {
+            throw new InvalidOperationException("Client is not connected.");
+        }
+
+        try
+        {
+            int bytesRead = _client.Receive(buffer, offset, count, SocketFlags.None);
+            if (bytesRead == 0)
+            {
+                Logger.Log("Received 0 bytes on read, closing connection.");
+                Disconnect();
+                return 0;
+            }
+
+            return bytesRead;
+        }
+        catch (SocketException e)
+        {
+            Logger.Log($"Socket error: {e.SocketErrorCode} {e.Message}");
+            Disconnect();
+            return 0;
+        }
+    }
+
+    private void BeginListen()
     {
         try
         {
-            await ListenForData(serverToken);
+            ListenForData();
         }
         catch (SocketException e)
         {
             Logger.Log($"Socket error: {e.SocketErrorCode} {e.Message}");
         }
-        catch (IOException e)
-        {
-            Logger.Log($"IO error: {e.Message}");
-        }
-        catch (OperationCanceledException)
+        catch (ThreadInterruptedException)
         {
             Logger.Log("Thread is cancelling.");
         }
         finally
         {
-            await Disconnect();
+            Disconnect();
         }
     }
 
-    private async Task ListenForData(CancellationToken serverToken)
+    private void ListenForData()
     {
-        CancellationToken token = _cancellationTokenSource.Token;
-
-        while (_client.Connected && !serverToken.IsCancellationRequested)
+        while (_client.Connected)
         {
-            if (_client.Available == 0)
+            if (_client.Available > 0)
             {
-                await Task.Delay(15, token);
-                continue;
+                DataAvailable?.Invoke(this, new ConnectionDataEventArgs(_client.Available));
             }
 
-            int bytesRead = await _client.ReceiveAsync(_buffer, SocketFlags.None, token);
-            if (bytesRead == 0)
-            {
-                break;
-            }
-
-            Logger.Log($"Received {bytesRead} bytes");
-
-            DataReceived?.Invoke(this, new ConnectionDataEventArgs(this, bytesRead, _buffer));
+            Thread.Sleep(15);
         }
     }
 }

@@ -6,6 +6,8 @@ namespace Fantalis.Core.Net;
 
 public struct NetPacket
 {
+    public PacketType Type { get; init; }
+
     public static byte[] GetProtocolVersion()
     {
         // Fetch AssemblyName of Fantalis.Core

@@ -79,15 +79,4 @@ public class FantalisServer
             }
         }
     }
-
-    private void OnClientConnect(object? _, ClientConnectEventArgs args)
-    {
-        // Expect that client will next send login details,
-        // to be compared against SQLite database
-    }
-
-    private void OnClientDisconnect(object? _, ClientConnectEventArgs args)
-    {
-
-    }
 }

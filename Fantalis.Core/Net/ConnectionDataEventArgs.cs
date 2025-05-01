@@ -1,14 +1,13 @@
+using System;
+
 namespace Fantalis.Core.Net;
 
-public class ConnectionDataEventArgs : ConnectionEventArgs
+public class ConnectionDataEventArgs : EventArgs
 {
     public int ByteCount { get; }
-    public byte[] Data { get; }
 
-    public ConnectionDataEventArgs(Connection connection, int byteCount, byte[] data)
-        : base(connection)
+    public ConnectionDataEventArgs(int byteCount)
     {
         ByteCount = byteCount;
-        Data = data;
     }
 }
