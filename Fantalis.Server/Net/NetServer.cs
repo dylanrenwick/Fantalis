@@ -12,13 +12,15 @@ namespace Fantalis.Server.Net;
 
 public class NetServer
 {
-    public event EventHandler<ClientConnectEventArgs>? ClientConnected;
-    public event EventHandler<ClientConnectEventArgs>? ClientDisconnected;
+    public event EventHandler<ConnectionEventArgs>? NewConnection;
+    public event EventHandler<ConnectionEventArgs>? Disconnect;
+    public event EventHandler<ConnectionDataEventArgs>? DataReceived;
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly List<Connection> _connections = [];
     
     private readonly Logger _logger;
+    private readonly Lock _lock;
 
     private bool _isRunning = false;
     private TcpListener? _listener;
@@ -88,19 +90,13 @@ public class NetServer
 
     private async Task HandleNewConnection(Socket client, CancellationToken token)
     {
-        Connection connection = new(_logger.WithName("Connect"), this, client);
-        connection.Disconnected += (_, args) => ClientDisconnected?.Invoke(this, args);
-        connection.StateChanged += OnConnectionStateChange;
+        Connection connection = new(_logger.WithName("Connect"), client);
+        connection.Disconnected += (_, args) => Disconnect?.Invoke(this, args);
+        connection.DataReceived += DataReceived;
+
+        NewConnection?.Invoke(this, new ConnectionEventArgs(connection));
 
         await connection.StartListening(token);
     }
 
-    private void OnConnectionStateChange(object? _, ClientConnectEventArgs args)
-    {
-        Connection conn = args.Connection;
-        if (conn.State == ConnectionState.Verified)
-        {
-            ClientConnected?.Invoke(this, args);
-        }
-    }
 }
