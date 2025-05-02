@@ -21,29 +21,12 @@ public class FantalisGame : Game
     private IMGUI? _ui;
     private Scene? _scene;
 
-    private GameState _state;
-    public GameState State
-    {
-        get => _state;
-        set
-        {
-            if (_state == value)
-            {
-                return;
-            }
-
-            _scene = null;
-            _state = value;
-        }
-    }
-
     public FantalisGame(Logger logger)
     {
         _graphics = new GraphicsDeviceManager(this);
         _logger = logger;
 
         _world = new GameCore(".", _logger.WithName("Game"));
-        State = GameState.Startup;
         
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
@@ -51,7 +34,6 @@ public class FantalisGame : Game
 
     protected override void Initialize()
     {
-        State = GameState.Loading;
         base.Initialize();
     }
 
@@ -71,19 +53,13 @@ public class FantalisGame : Game
 
     protected override void BeginRun()
     {
-        State = GameState.MainMenu;
+        _scene = new MainMenuScene(this);
         _world.BeginRun();
     }
 
     protected override void Update(GameTime gameTime)
     {
-        if (_scene is null)
-        {
-            _scene = GetScene();
-            _scene.Start();
-        }
-
-        if (_world is null)
+        if (_scene is null || _world is null)
         {
             Exit();
             return;
@@ -115,15 +91,5 @@ public class FantalisGame : Game
         _ui!.Draw(gameTime);
 
         base.Draw(gameTime);
-    }
-
-    private Scene GetScene()
-    {
-        return State switch
-        {
-            GameState.MainMenu => new MainMenuScene(this),
-            GameState.InGame => new GameScene(this, _world),
-            _ => throw new ArgumentOutOfRangeException()
-        };
     }
 }
