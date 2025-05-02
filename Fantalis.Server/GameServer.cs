@@ -5,7 +5,6 @@ using Riptide;
 
 using Fantalis.Core;
 using Fantalis.Core.Logging;
-using Fantalis.Core.Net;
 using Fantalis.Server.Net;
 
 namespace Fantalis.Server;
@@ -15,7 +14,7 @@ public class GameServer
     private readonly Logger _logger;
     private readonly GameCore _game;
 
-    private readonly Dictionary<ushort, NetClient> _clients = [];
+    private readonly Dictionary<ushort, PlayerClient> _clients = [];
 
     public GameServer(string rootPath, Logger logger)
     {
@@ -44,7 +43,7 @@ public class GameServer
             return;
         }
 
-        NetClient client = new(player, e.Client);
+        PlayerClient client = new(player, e.Client);
         _clients.Add(e.Client.Id, client);
     }
 
