@@ -14,7 +14,7 @@ public class PlayerSystem : GameSystem
     private readonly QueryDescription _playerQuery;
     
     public PlayerSystem(Logger logger, IReadOnlyDictionary<string, Player> players)
-        : base(logger)
+        : base(logger.SubLogger(nameof(PlayerSystem)))
     {
         _players = players;
         _playerQuery = new QueryDescription()

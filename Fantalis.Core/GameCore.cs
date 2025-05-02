@@ -28,7 +28,7 @@ public class GameCore
         _systems = new SystemGroup(
             logger,
             "root",
-            new PlayerSystem(logger.SubLogger(nameof(PlayerSystem)), _players)
+            new PlayerSystem(logger, _players)
         );
     }
 
