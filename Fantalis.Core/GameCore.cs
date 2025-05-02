@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+
 using Fantalis.Core.Logging;
+using Fantalis.Core.Mapping;
 using Fantalis.Core.Systems;
 
 namespace Fantalis.Core;
@@ -34,8 +35,14 @@ public class GameCore
     public void Initialize()
     {
         _logger.Log("Initializing game core...");
-        // TODO: Read rooms from file
-        List<Room> rooms = [];
+
+        RoomLoader loader = new(_logger.WithName("Loader"), _rootFilePath);
+        List<Room>? rooms = loader.LoadRoomData();
+        if (rooms is null)
+        {
+            _logger.Log("Failed to load room data.");
+            throw new System.Exception("Failed to load room data.");
+        }
         _logger.Log($"Loaded {rooms.Count} rooms.");
         
         _logger.Log("Initializing systems...");

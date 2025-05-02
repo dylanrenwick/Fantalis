@@ -1,9 +1,6 @@
-﻿using System;
-using System.Text.Json.Serialization;
-using Arch.Core;
-using Fantalis.Core.Mapping;
+﻿using Arch.Core;
 
-namespace Fantalis.Core;
+namespace Fantalis.Core.Mapping;
 
 /// <summary>
 /// This class represents a room in the world.
@@ -11,13 +8,11 @@ namespace Fantalis.Core;
 /// 
 /// It is responsible for handling its own Arch World.
 /// </summary>
-[Serializable]
 public class Room
 {
     public required string RoomId { get; init; }
     public required MapData MapData { get; init; }
     public required TileRegistry TileRegistry { get; init; }
 
-    [JsonIgnore]
     public readonly World World = World.Create();
 }
