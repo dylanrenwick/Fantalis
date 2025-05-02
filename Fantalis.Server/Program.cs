@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 using Fantalis.Core.Logging;
 
@@ -11,7 +10,7 @@ public static class Program
         msg => $"[{msg.Time}]{msg.LoggerName,8}{(msg.SubName.Length > 0 ? "-" + msg.SubName : string.Empty)}| {msg.Message}"
     );
 
-    private static async Task Main(string[] args)
+    private static void Main(string[] args)
     {
         Logger logger = new(
             "Server",
@@ -19,8 +18,8 @@ public static class Program
         );
 
         FantalisServer server = new(".", logger);
-        _ = server.Start();
+        server.Start();
         Console.ReadLine();
-        await server.Stop();
+        server.Stop();
     }
 }

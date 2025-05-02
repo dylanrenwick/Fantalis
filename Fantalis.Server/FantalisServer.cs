@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
+
+using Riptide;
 
 using Fantalis.Core;
 using Fantalis.Core.Logging;
@@ -11,72 +12,96 @@ namespace Fantalis.Server;
 public class FantalisServer
 {
     private const int UpdateInterval = 1000 / 20;
-    
-    private readonly string _rootPath;
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private readonly NetServer _networkServer;
 
-    private Logger _logger;
-    private Task? _networkTask;
-    
+    private readonly NetServer _networkServer;
+    private readonly AuthService _authService;
+    private readonly GameServer _gameServer;
+    private readonly Thread _serverThread;
+    private readonly Logger _logger;
+
+    private bool _isRunning = false;
+
     public FantalisServer(string rootPath, Logger defaultLogger)
     {
-        _rootPath = rootPath
-            ?? throw new ArgumentNullException(nameof(rootPath));
-
         _logger = defaultLogger;
-        // TODO: Read config from rootPath
-        
+
         _networkServer = new NetServer(_logger.WithName("Net"));
+        _authService = new AuthService(_logger.WithName("Auth"));
+        _gameServer = new GameServer(rootPath, _logger.WithName("Game"));
+
+        _serverThread = new Thread(RunServerLoop);
     }
     
-    public async Task Start()
+    public void Start()
     {
         _logger.Log("Initializing server...");
-        
-        GameCore gameCore = new(_rootPath, _logger.WithName("Game"));
-        gameCore.Initialize();
+        _isRunning = true;
+
+        _gameServer.Start();
         _logger.Log("Game Core initialized.");
 
-        _networkServer.ClientConnected += OnClientConnect;
-        _networkServer.ClientDisconnected += OnClientDisconnect;
-        _networkTask = _networkServer.Start(8888);
+        _networkServer.ConnectionVerified += HandleNewConnection;
+        _authService.PlayerAuthenticated += _gameServer.HandleNewPlayer;
+
+        _networkServer.MessageReceived += _authService.HandleMessageReceived;
+        _networkServer.MessageReceived += _gameServer.HandleMessageReceived;
+        _networkServer.ClientDisconnected += _authService.HandleClientDisconnect;
+        _networkServer.ClientDisconnected += _gameServer.HandleClientDisconnect;
+
+        // TODO: Read config from rootPath
+        _networkServer.Start(8888);
         _logger.Log("Network server started.");
 
-        await RunServerLoopAsync(gameCore, _cancellationTokenSource.Token);
+        _serverThread.Start();
     }
-    
-    public async Task Stop()
+
+    public void Stop()
     {
         _logger.Log("Stopping server...");
-        await _cancellationTokenSource.CancelAsync();
-        _cancellationTokenSource.Dispose();
+        _isRunning = false;
 
-        await _networkServer.Stop();
-        // Wait for network server to stop
-        if (_networkTask is not null)
-        {
-            await _networkTask;
-        }
+        _networkServer.Stop();
+        _serverThread.Interrupt();
+
+        _logger.Log("Server stopped. Goodbye.");
     }
     
-    private async Task RunServerLoopAsync(GameCore gameCore, CancellationToken cancellationToken)
+    private void RunServerLoop()
     {
         DateTime lastUpdate = DateTime.UtcNow;
-        
-        while (!cancellationToken.IsCancellationRequested)
+
+        while (_isRunning)
         {
-            DateTime currentTime = DateTime.UtcNow;
-            double deltaTime = (currentTime - lastUpdate).TotalSeconds;
-            lastUpdate = currentTime;
-            
-            gameCore.Update(deltaTime);
-            
-            var elapsed = (int)(DateTime.UtcNow - currentTime).TotalMilliseconds;
-            if (elapsed < UpdateInterval)
+            try
             {
-                await Task.Delay(UpdateInterval - elapsed, cancellationToken);
+                DateTime currentTime = DateTime.UtcNow;
+                double deltaTime = (currentTime - lastUpdate).TotalSeconds;
+                lastUpdate = currentTime;
+
+                Update(deltaTime);
+
+                var elapsed = (int)(DateTime.UtcNow - currentTime).TotalMilliseconds;
+                if (elapsed < UpdateInterval)
+                {
+                    Thread.Sleep(UpdateInterval - elapsed);
+                }
+            }
+            catch (ThreadInterruptedException)
+            {
+                // Thread was interrupted, exit the loop
+                break;
             }
         }
+    }
+
+    private void Update(double deltaTime)
+    {
+        _networkServer.Update();
+        _gameServer.Update(deltaTime);
+    }
+
+    private void HandleNewConnection(object? _, ServerConnectedEventArgs e)
+    {
+        _authService.Add(e.Client);
     }
 }
