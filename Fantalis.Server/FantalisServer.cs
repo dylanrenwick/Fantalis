@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 
 using Riptide;
 
-using Fantalis.Core;
 using Fantalis.Core.Logging;
 using Fantalis.Server.Net;
 
