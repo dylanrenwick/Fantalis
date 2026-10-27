@@ -120,7 +120,7 @@ public class NetServer
             _logger.Log($"Invalid handshake from client {connId}: {BitConverter.ToString(bytes)}");
             return false;
         }
-        
+
         for (int i = 0; i < _protocolVersion.Length; i++)
         {
             if (bytes[i] != _protocolVersion[i])

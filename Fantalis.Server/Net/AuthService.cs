@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 using Riptide;
 
-using Fantalis.Core;
 using Fantalis.Core.Logging;
-using Fantalis.Core.Net;
 
 namespace Fantalis.Server.Net;
 

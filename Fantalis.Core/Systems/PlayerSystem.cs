@@ -12,7 +12,7 @@ public class PlayerSystem : GameSystem
 {
     private readonly IReadOnlyDictionary<string, Player> _players;
     private readonly QueryDescription _playerQuery;
-    
+
     public PlayerSystem(Logger logger, IReadOnlyDictionary<string, Player> players)
         : base(logger.SubLogger(nameof(PlayerSystem)))
     {
@@ -25,7 +25,7 @@ public class PlayerSystem : GameSystem
     {
         Logger.Log("Initializing player system...");
     }
-    
+
     public override void Update(double deltaTime)
     {
         World.Query(
@@ -37,7 +37,7 @@ public class PlayerSystem : GameSystem
                     Logger.Log("Entity exists with player Id {playerFlag.Id}, but no player was found.");
                     return;
                 }
-                
+
                 Vector3 position = pos.Pos;
                 position += player.Input;
                 pos.Pos = position;

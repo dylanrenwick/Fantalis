@@ -11,7 +11,7 @@ public class GameScene : Scene
 {
     private readonly GameCore _world;
 
-    public GameScene(FantalisGame game, GameCore world) 
+    public GameScene(FantalisGame game, GameCore world)
         : base(game)
     {
         _world = world;

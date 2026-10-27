@@ -5,7 +5,7 @@ namespace Fantalis.Core.Logging;
 public class LogFormatter
 {
     private readonly Func<LogMessage, string> _formatter;
-    
+
     public LogFormatter(Func<LogMessage, string> formatter)
     {
         _formatter = formatter;

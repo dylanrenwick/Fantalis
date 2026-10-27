@@ -8,7 +8,7 @@ public abstract class FormattedDestination : ILogDestination
     {
         _formatter = formatter;
     }
-    
+
     public void Log(LogMessage message)
     {
         Log(Format(message));
@@ -16,6 +16,6 @@ public abstract class FormattedDestination : ILogDestination
 
     protected string Format(LogMessage message)
         => _formatter.Format(message);
-    
+
     protected abstract void Log(string message);
 }

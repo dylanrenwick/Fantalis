@@ -30,7 +30,7 @@ public class FantalisServer
 
         _serverThread = new Thread(RunServerLoop);
     }
-    
+
     public void Start()
     {
         _logger.Log("Initializing server...");
@@ -64,7 +64,7 @@ public class FantalisServer
 
         _logger.Log("Server stopped. Goodbye.");
     }
-    
+
     private void RunServerLoop()
     {
         DateTime lastUpdate = DateTime.UtcNow;

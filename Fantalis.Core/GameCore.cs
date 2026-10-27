@@ -21,7 +21,7 @@ public class GameCore
     {
         _rootFilePath = rootPath;
         _logger = logger;
-        
+
         _players = [];
         _rooms = [];
 
@@ -44,7 +44,7 @@ public class GameCore
             throw new System.Exception("Failed to load room data.");
         }
         _logger.Log($"Loaded {rooms.Count} rooms.");
-        
+
         _logger.Log("Initializing systems...");
         _systems.Initialize();
     }

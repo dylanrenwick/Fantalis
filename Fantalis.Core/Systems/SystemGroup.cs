@@ -79,7 +79,7 @@ public class SystemGroup : GameSystem
                 group.BeforeUpdate(world, deltaTime);
                 continue;
             }
-            
+
             system.World = world;
             system.BeforeUpdate(deltaTime);
         }
@@ -91,7 +91,7 @@ public class SystemGroup : GameSystem
             system.BeforeUpdate(deltaTime);
         }
     }
-    
+
     public override void Update(double deltaTime)
     {
         foreach (GameSystem system in _systems)

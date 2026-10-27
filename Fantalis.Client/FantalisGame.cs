@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Apos.Gui;
@@ -16,7 +15,7 @@ public class FantalisGame : Game
     private readonly GraphicsDeviceManager _graphics;
     private readonly Logger _logger;
     private readonly GameCore _world;
-    
+
     private SpriteBatch? _spriteBatch;
     private IMGUI? _ui;
     private Scene? _scene;
@@ -27,7 +26,7 @@ public class FantalisGame : Game
         _logger = logger;
 
         _world = new GameCore(".", _logger.WithName("Game"));
-        
+
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
