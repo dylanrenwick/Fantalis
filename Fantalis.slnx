@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Fantalis.Client/Fantalis.Client.csproj" />
+  <Project Path="Fantalis.Core/Fantalis.Core.csproj" />
+  <Project Path="Fantalis.Server/Fantalis.Server.csproj" />
+</Solution>
