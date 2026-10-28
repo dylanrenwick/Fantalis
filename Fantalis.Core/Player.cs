@@ -16,7 +16,7 @@ public class Player
     public string PlayerId { get; internal set; }
     public string RoomId { get; internal set; }
 
-    public Vector2 Input { get; set; } = Vector2.ZERO;
+    public Vector2 Input { get; set; } = Vector2.Zero;
 
     public Player(string playerId, string roomId)
     {
